@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
+import axios from 'axios'; //trying to use etherscan api to get token name
 import UniFactoryABI from "../abi/uniswapFactory.json";
 import UniRouterABI from "../abi/uniswapRouter.json";
 import UniPairABI from "../abi/uniswapPair.json";
 
 const App = () => {
+  const [tokenInfo, setTokenInfo] = useState(null);
   const [defaultAccount, setDefaultAccount] = useState(null);
   const [provider, setProvider] = useState(null);
   const [tokenAddress1, setTokenAddress1] = useState();
@@ -59,20 +61,25 @@ const App = () => {
     }
   }
 
-  async function checkLiquidityPool(){
+  async function addLiquidity(){
     const liquidityPoolAddress = await uniFactory.getPair(tokenAddress1,tokenAddress2);
+
     if(liquidityPoolAddress !== '0x0000000000000000000000000000000000000000'){
       const tempLPcontract = new ethers.Contract(liquidityPoolAddress,UniPairABI,provider);
       setLiquidityPoolContract(tempLPcontract);
       const tokenReserve = await liquidityPoolContract.getReserves();
-      alert(Array.from(tokenReserve));
       setReserves(tokenReserve);
-      alert(reserves[0]);
+      const response = await axios.get(`https://api-goerli.etherscan.io/api?module=account&action=tokenlist&address=${tokenAddress1}`);
+      if (response.data.status === '1') {
+        const token = response.data.result.find(
+          (t) => t.contractAddress.toLowerCase() === tokenAddress1.toLowerCase()
+        );
+
+        if (token) {
+          setTokenInfo(token);
+        }
+      }
     }
-  }
-
-  async function addLiquidity(){
-
   }
 
   async function swapToken(){
@@ -82,6 +89,9 @@ const App = () => {
   async function quote(){
 
   }
+
+
+
 
   //<--button handler-->
   const checktoken = async ()=>{
@@ -102,7 +112,7 @@ const App = () => {
 
   return (
     <div className="mt-64 ml-64">
-      {defaultAccount && <h3> Address: {defaultAccount} </h3>}
+      {defaultAccount && <h3> Address: {tokenInfo} </h3>}
       {/*<-- Swap and Pool--> */}
       <div className="flex flex-warp">
         <div
@@ -157,12 +167,15 @@ const App = () => {
         </div>
       </div>
       <div>
+        <h1>Token1 per Token2: {reserves[0]/reserves[1]} Token2 per Token1: {reserves[1]/reserves[0]}</h1>
+      </div>
+      <div>
         <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-        onClick={checkLiquidityPool}>
+        onClick={addLiquidity}>
           Add Liquidity
         </button>
         <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600">
-          Swap
+          Swap does nothing
         </button>
       </div>
       {/*<-- End Swap and Pool--> */}
