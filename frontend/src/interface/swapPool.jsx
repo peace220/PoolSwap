@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import UniFactoryABI from "../abi/uniswapFactory.json";
 import UniRouterABI from "../abi/uniswapRouter.json";
+import UniPairABI from "../abi/uniswapPair.json";
 
 const App = () => {
   const [defaultAccount, setDefaultAccount] = useState(null);
@@ -10,7 +11,8 @@ const App = () => {
   const [tokenAddress2, setTokenAddress2] = useState();
   const [uniRouter, setUniRouter] = useState(null);
   const [uniFactory, setUniFactory] = useState(null);
-  const [hasLiquidityPool, setHasLiquidityPool] = useState(false);
+  const [reserves, setReserves] = useState([]);
+  const [liquidityPoolContract, setLiquidityPoolContract] = useState(null);
   const testing = 0;
 
   const uniSwapRouterAdd = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; //uniswap v2 router address
@@ -28,10 +30,11 @@ const App = () => {
           });
           const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
           const tempRouter = new ethers.Contract(uniSwapRouterAdd,UniRouterABI,provider);
-          setUniRouter(tempRouter);
           const tempFactory = new ethers.Contract(uniSwapFactoryAdd,UniFactoryABI,provider);
+          setUniRouter(tempRouter);
           setUniFactory(tempFactory);
           setProvider(tempProvider);
+          console.log((Date.now()/1000).toFixed(0));
       } else {
         console.error("MetaMask extension not found.");
       }
@@ -43,9 +46,6 @@ const App = () => {
   }, []);
 
   async function checkTokenContractOnGoerli(tokenContractAddress) {
-    const provider = new ethers.providers.JsonRpcProvider(
-      "https://goerli.infura.io/v3/85a57ba9e7114c5d9feec2e559706017"
-    );
 
     try {
       const code = await provider.getCode(tokenContractAddress);
@@ -62,8 +62,21 @@ const App = () => {
   async function checkLiquidityPool(){
     const liquidityPoolAddress = await uniFactory.getPair(tokenAddress1,tokenAddress2);
     if(liquidityPoolAddress !== '0x0000000000000000000000000000000000000000'){
-      setHasLiquidityPool(true);
+      const tempLPcontract = new ethers.Contract(liquidityPoolAddress,UniPairABI,provider);
+      setLiquidityPoolContract(tempLPcontract);
+      const tokenReserve = await liquidityPoolContract.getReserves();
+      alert(Array.from(tokenReserve));
+      setReserves(tokenReserve);
+      alert(reserves[0]);
     }
+  }
+
+  async function addLiquidity(){
+
+  }
+
+  async function swapToken(){
+
   }
 
   async function quote(){
