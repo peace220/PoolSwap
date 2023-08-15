@@ -1,5 +1,5 @@
 import React from 'react'
-import FirstPage from './interface/swapPool';
+import FirstPage from './interface/mainInterface';
 
 const App = () => {
   return (

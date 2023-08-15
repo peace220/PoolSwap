@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import axios from 'axios'; //trying to use etherscan api to get token name
+import axios from "axios"; //trying to use etherscan api to get token name
 import UniFactoryABI from "../abi/uniswapFactory.json";
 import UniRouterABI from "../abi/uniswapRouter.json";
 import UniPairABI from "../abi/uniswapPair.json";
@@ -30,13 +30,21 @@ const App = () => {
           .catch((error) => {
             console.error("Error connecting wallet:", error);
           });
-          const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
-          const tempRouter = new ethers.Contract(uniSwapRouterAdd,UniRouterABI,provider);
-          const tempFactory = new ethers.Contract(uniSwapFactoryAdd,UniFactoryABI,provider);
-          setUniRouter(tempRouter);
-          setUniFactory(tempFactory);
-          setProvider(tempProvider);
-          console.log((Date.now()/1000).toFixed(0));
+        const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
+        const tempRouter = new ethers.Contract(
+          uniSwapRouterAdd,
+          UniRouterABI,
+          provider
+        );
+        const tempFactory = new ethers.Contract(
+          uniSwapFactoryAdd,
+          UniFactoryABI,
+          provider
+        );
+        setUniRouter(tempRouter);
+        setUniFactory(tempFactory);
+        setProvider(tempProvider);
+        console.log((Date.now() / 1000).toFixed(0));
       } else {
         console.error("MetaMask extension not found.");
       }
@@ -48,7 +56,6 @@ const App = () => {
   }, []);
 
   async function checkTokenContractOnGoerli(tokenContractAddress) {
-
     try {
       const code = await provider.getCode(tokenContractAddress);
       if (code === "0x") {
@@ -61,20 +68,30 @@ const App = () => {
     }
   }
 
-  async function addLiquidity(){
-    const liquidityPoolAddress = await uniFactory.getPair(tokenAddress1,tokenAddress2);
+  async function addLiquidity() {
+    const liquidityPoolAddress = await uniFactory.getPair(
+      tokenAddress1,
+      tokenAddress2
+    );
+    alert(liquidityPoolAddress);
 
-    if(liquidityPoolAddress !== '0x0000000000000000000000000000000000000000'){
-      const tempLPcontract = new ethers.Contract(liquidityPoolAddress,UniPairABI,provider);
+    if (liquidityPoolAddress !== "0x0000000000000000000000000000000000000000") {
+      const tempLPcontract = new ethers.Contract(
+        liquidityPoolAddress,
+        UniPairABI,
+        provider
+      );
       setLiquidityPoolContract(tempLPcontract);
       const tokenReserve = await liquidityPoolContract.getReserves();
       setReserves(tokenReserve);
-      const response = await axios.get(`https://api-goerli.etherscan.io/api?module=account&action=tokenlist&address=${tokenAddress1}`);
-      if (response.data.status === '1') {
+      const response = await axios.get(
+        `https://api-goerli.etherscan.io/api?module=account&action=tokenlist&address=${tokenAddress1}`
+      );
+      if (response.data.status === "1") {
         const token = response.data.result.find(
           (t) => t.contractAddress.toLowerCase() === tokenAddress1.toLowerCase()
         );
-
+        alert(token);
         if (token) {
           setTokenInfo(token);
         }
@@ -82,21 +99,14 @@ const App = () => {
     }
   }
 
-  async function swapToken(){
+  async function swapToken() {}
 
-  }
-
-  async function quote(){
-
-  }
-
-
-
+  async function quote() {}
 
   //<--button handler-->
-  const checktoken = async ()=>{
+  const checktoken = async () => {
     await checkTokenContractOnGoerli(tokenAddress1);
-  }
+  };
 
   const accountChangeHandler = (newAccount) => {
     setDefaultAccount(newAccount);
@@ -129,8 +139,10 @@ const App = () => {
             onChange={handleToken1Change}
           />
           <div className="mt-4 mb-4">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-            onClick={checktoken}>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+              onClick={checktoken}
+            >
               Find Token
             </button>
           </div>
@@ -154,8 +166,10 @@ const App = () => {
             onChange={handleToken2Change}
           />
           <div className="mt-4 mb-4">
-            <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-            onClick={checktoken}>
+            <button
+              className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+              onClick={checktoken}
+            >
               Find Token
             </button>
           </div>
@@ -167,11 +181,16 @@ const App = () => {
         </div>
       </div>
       <div>
-        <h1>Token1 per Token2: {reserves[0]/reserves[1]} Token2 per Token1: {reserves[1]/reserves[0]}</h1>
+        <h1>
+          Token1 per Token2: {reserves[0] / reserves[1]} Token2 per Token1:{" "}
+          {reserves[1] / reserves[0]}
+        </h1>
       </div>
       <div>
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-        onClick={addLiquidity}>
+        <button
+          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+          onClick={addLiquidity}
+        >
           Add Liquidity
         </button>
         <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600">
