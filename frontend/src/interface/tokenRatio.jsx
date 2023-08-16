@@ -3,7 +3,7 @@ import UniPairABI from "../abi/uniswapPair.json";
 import useConfigurationSwapPool from "./configurationSwapPool";
 import useLiquidityPool from "./addLiquidity";
 
-const useTokenRatio = () => {
+const TokenRatio = () => {
     const{liquidityPoolContract} = useLiquidityPool();
     const { provider, uniFactoryContract } = useConfigurationSwapPool();
 
@@ -19,4 +19,4 @@ const useTokenRatio = () => {
     return { getTokenRatio123 };
 };
 
-export default useTokenRatio;
+export default TokenRatio;

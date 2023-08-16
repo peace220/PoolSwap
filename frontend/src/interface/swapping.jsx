@@ -4,8 +4,8 @@ import axios from "axios"; //trying to use etherscan api to get token name
 import UniFactoryABI from "../abi/uniswapFactory.json";
 import UniRouterABI from "../abi/uniswapRouter.json";
 import UniPairABI from "../abi/uniswapPair.json";
-const swapping = () => {
+const Swapping = () => {
 
 };
 
-export default swapping;
+export default Swapping;

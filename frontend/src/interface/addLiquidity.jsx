@@ -3,7 +3,7 @@ import UniPairABI from "../abi/uniswapPair.json";
 import configurationSwapPool from "./configurationSwapPool";
 import { useEffect, useState } from "react";
 
-const useLiquidityPool = (tokenAddress1, tokenAddress2) => {
+const AddLiquidity = (tokenAddress1, tokenAddress2) => {
     const { provider, uniFactoryContract } = configurationSwapPool();
     const [liquidityPoolContract, setLiquidityPoolContract] = useState(null);
 
@@ -38,4 +38,4 @@ const useLiquidityPool = (tokenAddress1, tokenAddress2) => {
     return { liquidityPoolContract };
 }
 
-export default useLiquidityPool;
+export default AddLiquidity;

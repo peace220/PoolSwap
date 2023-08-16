@@ -7,7 +7,7 @@ import UniRouterABI from "../abi/uniswapRouter.json";
 const uniSwapRouterAdd = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const uniSwapFactoryAdd = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
 
-const useConfigurationSwapPool = () => {
+const ConfigurationSwapPool = () => {
   const [defaultAccount, setDefaultAccount] = useState(null);
   const [provider, setProvider] = useState();
   const [uniFactoryContract, setUniFactoryContract] = useState(null);
@@ -79,4 +79,4 @@ const useConfigurationSwapPool = () => {
   return { provider, uniFactoryContract, uniRouterContract, defaultAccount, checkTokenContractOnGoerli };
 };
 
-export default useConfigurationSwapPool;
+export default ConfigurationSwapPool;
