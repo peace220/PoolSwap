@@ -6,8 +6,8 @@ import useTokenRatio from "./tokenRatio";
 
 const App = () => {
   const {defaultAccount, checkTokenContractOnGoerli } = useConfigurationSwapPool();
-  const [tokenAddress1, setTokenAddress1] = useState();
-  const [tokenAddress2, setTokenAddress2] = useState();
+  const [tokenAddress1, setTokenAddress1] = useState("");
+  const [tokenAddress2, setTokenAddress2] = useState("");
   const [reserves, setReserves] = useState([]);
   const {getTokenRatio123} = useTokenRatio();
   const {} = useLiquidityPool(tokenAddress1, tokenAddress2);
@@ -94,6 +94,7 @@ const App = () => {
         </div>
       </div>
       <div>
+        {"possible division by zero, check for this condition"}
         <h1>
           Token1 per Token2: {reserves[0] / reserves[1]} Token2 per Token1:{" "}
           {reserves[1] / reserves[0]}

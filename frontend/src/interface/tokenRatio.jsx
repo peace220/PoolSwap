@@ -1,7 +1,7 @@
 import { ethers } from "ethers";
 import UniPairABI from "../abi/uniswapPair.json";
 import useConfigurationSwapPool from "./configurationSwapPool";
-import useLiquidityPool from "./addLiquidity.js";
+import useLiquidityPool from "./addLiquidity";
 
 const useTokenRatio = () => {
     const{liquidityPoolContract} = useLiquidityPool();
