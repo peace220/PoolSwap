@@ -1,16 +1,15 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import SetupSwapPool from "./SetupSwapPool";
-import AddLiquidity from "./addLiquidity";
-import useTokenRatio from "./tokenRatio";
+import AddLiquidity from "./LiquidityPool";
+
 
 const App = () => {
   const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
   const [tokenAddress1, setTokenAddress1] = useState("");
   const [tokenAddress2, setTokenAddress2] = useState("");
   const [reserves, setReserves] = useState([]);
-  const {getTokenRatio123} = useTokenRatio();
-  const {} = AddLiquidity(tokenAddress1, tokenAddress2);
+  const {getTokenRatio, getQuoteLiquidityPool} = AddLiquidity(tokenAddress1, tokenAddress2);
 
   //<--button handler-->
   const checktoken = async () => {
@@ -29,11 +28,9 @@ const App = () => {
   const tokenRatioHandler = () =>{
     
   }
-  const addLiquidityHandler = async () =>{
-    const tempreserve = await getTokenRatio123();
-
+  const getTokenRatioHandler = async () =>{
+    const tempreserve = await getTokenRatio();
     setReserves(tempreserve);
-  
   }
 
   return (
@@ -106,7 +103,7 @@ const App = () => {
       <div>
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-          onClick={addLiquidityHandler}
+          onClick={getTokenRatioHandler}
         >
           Add Liquidity
         </button>
