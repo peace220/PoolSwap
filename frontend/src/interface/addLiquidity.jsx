@@ -1,38 +1,39 @@
-import { ethers } from "ethers"
+import { ethers } from "ethers";
 import UniPairABI from "../abi/uniswapPair.json";
-import configurationSwapPool from "./configurationSwapPool";
 import { useEffect, useState } from "react";
+import { setupSwapPool2 } from "./setupSwapPool2";
+
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
 const AddLiquidity = (tokenAddress1, tokenAddress2) => {
-    const { provider, uniFactoryContract } = configurationSwapPool();
+    const [provider, setProvider] = useState(null);
+    const [uniFactoryContract, setUniFactoryContract] = useState(null);
     const [liquidityPoolContract, setLiquidityPoolContract] = useState(null);
 
     useEffect(() => {
-        const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
+        const setupLiquidity = async () => {
+            if (!tokenAddress1 || !tokenAddress2) return;
 
-        const setup = async () => {
-            if (tokenAddress1 && tokenAddress2) {
-                let liquidityPoolAddress;
+            try {
+                // object destructuring, renaming provider to swapProvider locally and also uniFactoryContract
+                // because your provider is used for state above, i am not sure what
+                const { provider: swapProvider, uniFactoryContract: swapFactoryContract } = await setupSwapPool2();
                 
-                try {
-                    liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
-                } catch (error) {
-                    console.error("Error fetching liquidity pool address:", error);
-                    return;  // Exit early if this fails
-                }
+                setProvider(swapProvider);
+                setUniFactoryContract(swapFactoryContract);
                 
-                if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
-                    try {
-                        const templiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
-                        setLiquidityPoolContract(templiquidityPoolContract);
-                    } catch (error) {
-                        console.error("Error creating liquidity pool contract instance:", error);
-                    }
+                const poolAddress = await swapFactoryContract.getPair(tokenAddress1, tokenAddress2);
+                
+                if (poolAddress && poolAddress !== ZERO_ADDRESS) {
+                    const liquidityContract = new ethers.Contract(poolAddress, UniPairABI, swapProvider);
+                    setLiquidityPoolContract(liquidityContract);
                 }
+            } catch (error) {
+                console.error("Error setting up liquidity:", error);
             }
         };
 
-        setup();
+        setupLiquidity();
     }, [tokenAddress1, tokenAddress2]);
 
     return { liquidityPoolContract };

@@ -1,16 +1,16 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
-import useConfigurationSwapPool from "./configurationSwapPool";
-import useLiquidityPool from "./addLiquidity";
+import SetupSwapPool from "./SetupSwapPool";
+import AddLiquidity from "./addLiquidity";
 import useTokenRatio from "./tokenRatio";
 
 const App = () => {
-  const {defaultAccount, checkTokenContractOnGoerli } = useConfigurationSwapPool();
+  const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
   const [tokenAddress1, setTokenAddress1] = useState("");
   const [tokenAddress2, setTokenAddress2] = useState("");
   const [reserves, setReserves] = useState([]);
   const {getTokenRatio123} = useTokenRatio();
-  const {} = useLiquidityPool(tokenAddress1, tokenAddress2);
+  const {} = AddLiquidity(tokenAddress1, tokenAddress2);
 
   //<--button handler-->
   const checktoken = async () => {
@@ -26,7 +26,7 @@ const App = () => {
     setTokenAddress2(event.target.value);
   };
 
-  const tokenRaioHandler = () =>{
+  const tokenRatioHandler = () =>{
     
   }
   const addLiquidityHandler = async () =>{
