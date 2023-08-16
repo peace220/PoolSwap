@@ -26,6 +26,9 @@ const App = () => {
     setTokenAddress2(event.target.value);
   };
 
+  const tokenRaioHandler = () =>{
+    
+  }
   const addLiquidityHandler = async () =>{
     const tempreserve = await getTokenRatio123();
 
