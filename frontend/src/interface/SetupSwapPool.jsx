@@ -17,6 +17,11 @@ const SetupSwapPool = () => {
     const setup = async () => {
       try {
         if (window.ethereum) {
+          window.ethereum
+            .request({method: 'eth_requestAccounts'})
+            .catch(error=>{
+              console.error('Error Connecting to MetaMask: ',error);
+            })
           const accounts = await window.ethereum.request({ method: 'eth_accounts' });
           setDefaultAccount(accounts[0]);
           const tempProvider = new ethers.providers.Web3Provider(window.ethereum);
@@ -26,6 +31,7 @@ const SetupSwapPool = () => {
           const tempUniFactoryContract = new ethers.Contract(uniSwapFactoryAdd, UniFactoryABI, tempSigner);
 
           setProvider(tempProvider);
+          console.log(provider);
           setUniRouterContract(tempUniRouterContract);
           setUniFactoryContract(tempUniFactoryContract);
         } else {
@@ -65,6 +71,7 @@ const SetupSwapPool = () => {
 
   const checkTokenContractOnGoerli = async (tokenContractAddress) => {
     try {
+      console.log(provider);
       const code = await provider.getCode(tokenContractAddress);
       if (code === "0x") {
         alert("Token not found");
