@@ -31,7 +31,6 @@ const SetupSwapPool = () => {
           const tempUniFactoryContract = new ethers.Contract(uniSwapFactoryAdd, UniFactoryABI, tempSigner);
 
           setProvider(tempProvider);
-          console.log(provider);
           setUniRouterContract(tempUniRouterContract);
           setUniFactoryContract(tempUniFactoryContract);
         } else {

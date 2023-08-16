@@ -1,15 +1,21 @@
 import React, { useState, useEffect } from "react";
 import { ethers } from "ethers";
 import SetupSwapPool from "./SetupSwapPool";
-import AddLiquidity from "./LiquidityPool";
+import LiquidityPool from "./LiquidityPool";
+import Swapping from "./swapping";
 
 
 const App = () => {
-  const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
   const [tokenAddress1, setTokenAddress1] = useState("");
   const [tokenAddress2, setTokenAddress2] = useState("");
+  const [tokenAmount1, setTokenAdmount1] = useState("");
+  const [tokenAmount2, setTokenAdmount2] = useState("");
   const [reserves, setReserves] = useState([]);
-  const {getTokenRatio, getQuoteLiquidityPool} = AddLiquidity(tokenAddress1, tokenAddress2);
+
+  const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
+  const {getTokenRatio} = LiquidityPool(tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2);
+  const {getQuoteLiquidityPool} = Swapping(tokenAddress1, tokenAddress2);
+
 
   //<--button handler-->
   const checktoken = async () => {
@@ -17,12 +23,20 @@ const App = () => {
     await checkTokenContractOnGoerli(tokenAddress1);
   };
 
-  const handleToken1Change = (event) => {
+  const handleToken1AddressChange = (event) => {
     setTokenAddress1(event.target.value);
   };
 
-  const handleToken2Change = (event) => {
+  const handleToken2AddressChange = (event) => {
     setTokenAddress2(event.target.value);
+  };
+
+  const handleToken1AmountChange = (event) => {
+    setTokenAdmount1(event.target.value);
+  };
+
+  const handleToken2AmountChange = (event) => {
+    setTokenAdmount2(event.target.value);
   };
 
   const tokenRatioHandler = () =>{
@@ -49,7 +63,7 @@ const App = () => {
             type="text"
             placeholder="Token Address"
             value={tokenAddress1}
-            onChange={handleToken1Change}
+            onChange={handleToken1AddressChange}
           />
           <div className="mt-4 mb-4">
             <button
@@ -63,6 +77,8 @@ const App = () => {
             className="w-64 px-4 py-2 rounded-md border focus:outline-none focus:ring focus:border-blue-300"
             type="text"
             placeholder="0.0"
+            value={tokenAmount1}
+            onChange={handleToken1AmountChange}
           />
         </div>
         <div
@@ -76,7 +92,7 @@ const App = () => {
             type="text"
             placeholder="Token Address"
             value={tokenAddress2}
-            onChange={handleToken2Change}
+            onChange={handleToken2AddressChange}
           />
           <div className="mt-4 mb-4">
             <button
@@ -90,6 +106,8 @@ const App = () => {
             className="w-64 px-4 py-2 rounded-md border focus:outline-none focus:ring focus:border-blue-300"
             type="text"
             placeholder="0.0"
+            value={tokenAmount2}
+            onChange={handleToken2AmountChange}
           />
         </div>
       </div>
