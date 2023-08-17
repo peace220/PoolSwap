@@ -13,8 +13,8 @@ const App = () => {
   const [reserves, setReserves] = useState([]);
 
   const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
-  const {getTokenRatio} = LiquidityPool(tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2);
-  const {getQuoteLiquidityPool} = Swapping(tokenAddress1, tokenAddress2);
+  const {getTokenRatio, tokenQuote1, tokenQuote2} = LiquidityPool(tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2);
+
 
 
   //<--button handler-->
@@ -112,10 +112,14 @@ const App = () => {
         </div>
       </div>
       <div>
-        {"possible division by zero, check for this condition"}
         <h1>
           Token1 per Token2: {reserves[0] / reserves[1]} Token2 per Token1:{" "}
           {reserves[1] / reserves[0]}
+        </h1>
+      </div>
+      <div>
+      <h1>
+          Token Quote 1: {tokenQuote1} Token Quote 2:{ tokenQuote2}
         </h1>
       </div>
       <div>

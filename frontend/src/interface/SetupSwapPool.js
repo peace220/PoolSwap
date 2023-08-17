@@ -70,7 +70,6 @@ const SetupSwapPool = () => {
 
   const checkTokenContractOnGoerli = async (tokenContractAddress) => {
     try {
-      console.log(provider);
       const code = await provider.getCode(tokenContractAddress);
       if (code === "0x") {
         alert("Token not found");

@@ -8,6 +8,8 @@ const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2)
     const [liquidityPoolContract, setLiquidityPoolContract] = useState(null);
     const [tokenQuote1, setTokenQuote1] = useState(null);
     const [tokenQuote2, setTokenQuote2] = useState(null);
+    const [prevTokenAmount1, setPrevTokenAmount1] = useState("");
+    const [prevTokenAmount2, setPrevTokenAmount2] = useState("");
     const { provider, uniFactoryContract,uniRouterContract } = SetupSwapPool();
 
 
@@ -23,20 +25,28 @@ const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2)
                     setTokenReserve(reservesss);
                     setLiquidityPoolContract(templiquidityPoolContract);
                 }
-
-                if(tokenAmount1 !="" && tokenAmount2 != ""){
-                    if(tokenAmount1 !=""){
-                        const tempTokenQuote2 = uniRouterContract.quote(tokenAmount1,tokenReserve[0],tokenReserve[1]);
-                        setTokenQuote2(tempTokenQuote2);
-                    } else{
-                        const tempTokenQuote1 = uniRouterContract.quote(tokenAmount2,tokenReserve[0],tokenReserve[1]);
-                        setTokenQuote1(tempTokenQuote1);
+                // if(tokenAmount1 !==""){
+                //     const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount1);
+                //     setTokenAmountETH1(tempTokenAmountETH);
+                // } else if (tokenAddress2 !== ""){
+                //     const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount2);
+                //     setTokenAmountETH2(tempTokenAmountETH);
+                // } trying to convert number to ethers
+                if (tokenAmount1 !== "" || tokenAmount2 !== "") {
+                    if (tokenAmount1 !== prevTokenAmount1) {
+                        const tempTokenQuote2 = await uniRouterContract.quote(tokenAmount1, tokenReserve[0], tokenReserve[1]);
+                        const temptTokenQuote2 = ethers.utils.formatEther(tempTokenQuote2)
+                        setTokenQuote2(temptTokenQuote2);
+                    } else if (tokenAmount2 !== prevTokenAmount2) {
+                        const tempTokenQuote1 = await uniRouterContract.quote(tokenAmount2, tokenReserve[1], tokenReserve[0]);
+                        const temptTokenQuote1 = ethers.utils.formatEther(tempTokenQuote1)
+                        setTokenQuote1(temptTokenQuote1);
                     }
+                    
+                    // Update the previous values
+                    setPrevTokenAmount1(tokenAmount1);
+                    setPrevTokenAmount2(tokenAmount2);
                 }
-                console.log(tokenAmount1);
-                console.log(tokenAmount2);
-                console.log(tokenQuote1);
-                console.log(tokenQuote2);
             } else{
                 setTokenReserve(null);
                 setLiquidityPoolContract(null);
@@ -51,18 +61,17 @@ const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2)
         setup();
     }, [tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2]);
 
+
     const getQuoteLiquidityPool = async(firstTokenAmount) =>{
         const secondTokenAmount = uniRouterContract.quote(firstTokenAmount,tokenReserve[0],tokenReserve[1]);
         return secondTokenAmount;
     }
     
     const getTokenRatio = async () => {
-        console.log(tokenQuote1);
-        console.log(tokenQuote2);
         return tokenReserve 
     };
 
-    return { liquidityPoolContract ,getTokenRatio};
+    return { liquidityPoolContract ,getTokenRatio, tokenQuote1,tokenQuote2};
 }
 
 export default LiquidityPool;
