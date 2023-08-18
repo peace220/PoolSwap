@@ -8,18 +8,16 @@ import Swapping from "./swapping";
 const App = () => {
   const [tokenAddress1, setTokenAddress1] = useState("");
   const [tokenAddress2, setTokenAddress2] = useState("");
-  const [tokenAmount1, setTokenAdmount1] = useState("");
-  const [tokenAmount2, setTokenAdmount2] = useState("");
+  const [tokenAmount1, setTokenAmount1] = useState("");
+  const [tokenAmount2, setTokenAmount2] = useState("");
   const [reserves, setReserves] = useState([]);
 
   const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
   const {getTokenRatio, tokenQuote1, tokenQuote2} = LiquidityPool(tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2);
 
 
-
   //<--button handler-->
   const checktoken = async () => {
-    alert(defaultAccount);
     await checkTokenContractOnGoerli(tokenAddress1);
   };
 
@@ -32,11 +30,11 @@ const App = () => {
   };
 
   const handleToken1AmountChange = (event) => {
-    setTokenAdmount1(event.target.value);
+    setTokenAmount1(event.target.value);
   };
 
   const handleToken2AmountChange = (event) => {
-    setTokenAdmount2(event.target.value);
+    setTokenAmount2(event.target.value);
   };
 
   const tokenRatioHandler = () =>{
