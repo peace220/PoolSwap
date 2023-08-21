@@ -2,6 +2,8 @@ import { ethers } from "ethers"
 import UniPairABI from "../abi/uniswapPair.json";
 import SetupSwapPool from "./SetupSwapPool";
 import { useEffect, useState } from "react";
+import { useTokenContract } from "../hooks/useContracts";
+import { Fetcher, ChainId, Trade, TokenAmount,TradeType} from "@uniswap/sdk";
 
 
 const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2) => {
@@ -10,50 +12,48 @@ const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2)
     const [tokenQuote2, setTokenQuote2] = useState(null);
     const [prevTokenAmount1, setPrevTokenAmount1] = useState("");
     const [prevTokenAmount2, setPrevTokenAmount2] = useState("");
-    const { provider, uniFactoryContract,uniRouterContract } = SetupSwapPool();
+    const { provider, uniFactoryContract,uniRouterContract, defaultAccount } = SetupSwapPool();
+    
 
 
     useEffect(() => {
-        const ZERO_ADDRESS = "0x";
 
         const setup = async () => {
             if (tokenAddress1 && tokenAddress2) {
-                const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
-                if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
-                    const templiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
-                    const reservesss = await templiquidityPoolContract.getReserves();
-                    setTokenReserve(reservesss);
-                }
-
-                if ((tokenAmount1 !== "" && !isNaN(tokenAmount1)) || (tokenAmount2 !== "" && !isNaN(tokenAmount2))) {
-                    try{
+                try {
+                    const token1 = await Fetcher.fetchTokenData(ChainId, tokenAddress1, provider);
+                    const token2 = await Fetcher.fetchTokenData(ChainId, tokenAddress2, provider);
+        
+                    const pair = await Fetcher.fetchPairData(token1, token2, provider);
+        
+                    if ((tokenAmount1 !== '' && !isNaN(tokenAmount1)) || (tokenAmount2 !== '' && !isNaN(tokenAmount2))) {
                         if (!isNaN(tokenAmount1) && tokenAmount1 !== prevTokenAmount1) {
-                            //Quote for Second Token
-                            const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount1);
-                            let tempTokenQuote = await uniRouterContract.quote(tempTokenAmountETH, tokenReserve[0], tokenReserve[1]);
-                            tempTokenQuote = ethers.utils.formatEther(tempTokenQuote)
-                            tempTokenQuote = customRound(tempTokenQuote)
-                            setTokenQuote2(tempTokenQuote);
+                            const trade = new Trade(
+                                pair,
+                                new TokenAmount(token1, ethers.utils.parseEther(tokenAmount1)),
+                                TradeType.EXACT_INPUT
+                            );
+                            const executionPrice = trade.executionPrice.toSignificant(6);
+                            setTokenQuote2(executionPrice);
                             setPrevTokenAmount1(tokenAmount1);
-    
-                        } else if (!isNaN(tokenAmount2) && tokenAmount2 !== prevTokenAmount2){
-                            //Quote for First Token
-                            const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount2);
-                            let tempTokenQuote = await uniRouterContract.quote(tempTokenAmountETH, tokenReserve[1], tokenReserve[0]);
-                            tempTokenQuote = ethers.utils.formatEther(tempTokenQuote)
-                            tempTokenQuote = customRound(tempTokenQuote)
-                            setTokenQuote1(tempTokenQuote);
+                        } else if (!isNaN(tokenAmount2) && tokenAmount2 !== prevTokenAmount2) {
+                            const trade = new Trade(
+                                pair,
+                                new TokenAmount(token2, ethers.utils.parseEther(tokenAmount2)),
+                                TradeType.EXACT_OUTPUT
+                            );
+                            const executionPrice = trade.executionPrice.toSignificant(6);
+                            setTokenQuote1(executionPrice);
                             setPrevTokenAmount2(tokenAmount2);
-                        } 
-                    }catch(error){
-                        console.log(error);
+                        }
+                    } else {
+                        setTokenQuote1('');
+                        setTokenQuote2('');
                     }
-                    
-                }else {
-                    setTokenQuote1(""); 
-                    setTokenQuote2(""); 
+                } catch (error) {
+                    console.log(error);
                 }
-            } else{
+            } else {
                 setTokenReserve(null);
             }
         };
@@ -61,15 +61,10 @@ const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2)
         setup();
     }, [tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2]);
 
-    
-
-
-    const getTokenRatio = async () => {
-        return tokenReserve 
-    };
 
     const getToken1Approval = async () => {
-        
+        const contract = useTokenContract(tokenAddress1,true);
+        const response = await contract.approve(defaultAccount, )
     }
 
     const getToken2Approval = async () => {
@@ -84,7 +79,7 @@ const LiquidityPool = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2)
         return number
     }
 
-    return {getTokenRatio, tokenQuote1,tokenQuote2};
+    return {tokenQuote1,tokenQuote2};
 }
 
 export default LiquidityPool;
