@@ -3,6 +3,8 @@ import { ethers } from "ethers";
 import SetupSwapPool from "./SetupSwapPool";
 import LiquidityPool from "./LiquidityPool";
 import Swapping from "./swapping";
+import { SwapWidget } from '@uniswap/widgets'
+import '@uniswap/widgets/fonts.css'
 
 
 const App = () => {
@@ -13,7 +15,7 @@ const App = () => {
   const [reserves, setReserves] = useState([]);
 
   const {defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
-  const {getTokenRatio, tokenQuote1, tokenQuote2} = LiquidityPool(tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2);
+  const {getTokenRatio, tokenQuote1, tokenQuote2,getToken1Approval} = LiquidityPool(tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2);
 
 
   //<--button handler-->
@@ -41,14 +43,14 @@ const App = () => {
     
   }
   const getTokenRatioHandler = async () =>{
-    const tempreserve = await getTokenRatio();
-    setReserves(tempreserve);
+    const tempreserve = await getToken1Approval();
   }
 
   return (
     <div className="mt-64 ml-64">
       {defaultAccount && <h3> Address: {defaultAccount} </h3>}
       {/*<-- Swap and Pool--> */}
+
       <div className="flex flex-warp">
         <div
           className={
@@ -132,6 +134,10 @@ const App = () => {
         </button>
       </div>
       {/*<-- End Swap and Pool--> */}
+      <div className="Uniswap">
+        <SwapWidget/>
+      </div>
+      {/*<--- SwapWidget cant get goerli token??? --->*/}
     </div>
   );
 };

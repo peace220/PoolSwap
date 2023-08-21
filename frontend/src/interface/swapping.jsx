@@ -19,12 +19,12 @@ const Swapping = (tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2) => {
         const setup = async () => {
             if (tokenAddress1 && tokenAddress2) {
                 const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
-                if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
-                    const templiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
-                    const reservesss = await templiquidityPoolContract.getReserves();
-                    setTokenReserve(reservesss);
-                    setLiquidityPoolContract(templiquidityPoolContract);
-                }
+                // if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
+                //     const templiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
+                //     const reservesss = await templiquidityPoolContract.getReserves();
+                //     setTokenReserve(reservesss);
+                //     setLiquidityPoolContract(templiquidityPoolContract);
+                // }
                 if (tokenAmount1 !== "" || tokenAmount2 !== "") {
                     if (tokenAmount1 !== prevTokenAmount1) {
                         const tempTokenQuote2 = await uniRouterContract.quote(tokenAmount1, tokenReserve[0], tokenReserve[1]);
