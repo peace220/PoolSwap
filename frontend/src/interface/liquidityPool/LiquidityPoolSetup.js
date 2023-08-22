@@ -1,0 +1,70 @@
+// LiquidityPoolSetup.js
+
+import { ethers } from "ethers";
+import UniPairABI from "../../abi/uniswapPair.json";
+
+
+export const setupLiquidityPool = async (
+  tokenAddress1,
+  tokenAddress2,
+  tokenAmount1,
+  tokenAmount2,
+  provider,
+  uniFactoryContract,
+  uniRouterContract,
+  tokenReserve,
+  prevTokenAmount1,
+  prevTokenAmount2,
+  setTokenReserve,
+  setTokenQuote1,
+  setTokenQuote2,
+  setPrevTokenAmount1,
+  setPrevTokenAmount2
+) => {
+  const ZERO_ADDRESS = "0x000000000000000000";
+
+  if (tokenAddress1 && tokenAddress2) {
+    const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
+    if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
+      const tempLiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
+      const reservesss = await tempLiquidityPoolContract.getReserves();
+      setTokenReserve(reservesss);
+    }
+
+    if ((tokenAmount1 !== "" && !isNaN(tokenAmount1)) || (tokenAmount2 !== "" && !isNaN(tokenAmount2))) {
+      try {
+        if (!isNaN(tokenAmount1) && tokenAmount1 !== prevTokenAmount1) {
+          // Quote for Second Token
+          const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount1);
+          let tempTokenQuote = await uniRouterContract.getAmountOut(tempTokenAmountETH, tokenReserve[0], tokenReserve[1]);
+          tempTokenQuote = ethers.utils.formatEther(tempTokenQuote);
+          tempTokenQuote = customRound(tempTokenQuote);
+          setTokenQuote2(tempTokenQuote);
+          setPrevTokenAmount1(tokenAmount1);
+        } else if (!isNaN(tokenAmount2) && tokenAmount2 !== prevTokenAmount2) {
+          // Quote for First Token
+          const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount2);
+          let tempTokenQuote = await uniRouterContract.getAmountOut(tempTokenAmountETH, tokenReserve[1], tokenReserve[0]);
+          tempTokenQuote = ethers.utils.formatEther(tempTokenQuote);
+          tempTokenQuote = customRound(tempTokenQuote);
+          setTokenQuote1(tempTokenQuote);
+          setPrevTokenAmount2(tokenAmount2);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    } else {
+      setTokenQuote1("");
+      setTokenQuote2("");
+    }
+  } else {
+    setTokenReserve(null);
+  }
+
+  function customRound(number) {
+    number = parseFloat(number);
+    number = number.toFixed(6);
+    return number
+}
+};
+
