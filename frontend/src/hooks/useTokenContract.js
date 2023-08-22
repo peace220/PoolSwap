@@ -4,7 +4,12 @@ import ERC20_ABI from "../abi/erc20.json";
 export async function getTokenApproval(spender,tokenAddress,provider){
     const contract = getContract(tokenAddress,ERC20_ABI,provider,spender);
     const spenderBalance = getBalance(spender,tokenAddress,provider);
-    await contract.approve(spender, spenderBalance);
+    try{
+        await contract.approve(spender, spenderBalance);
+    }catch(error){
+        console.log(error);
+    }
+    
 }
 
 async function getBalance(spender,tokenAddress,provider){
