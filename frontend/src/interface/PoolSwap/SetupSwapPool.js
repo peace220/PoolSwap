@@ -52,22 +52,6 @@ const SetupSwapPool = () => {
     setup();
   }, []);
 
-  const getTokenSymbol = async (tokenAddress1) => {
-    try {
-      const response = await axios.get(
-        `https://api-goerli.etherscan.io/api?module=account&action=tokenlist&address=${tokenAddress1}`
-      );
-      if (response.data.status === "1") {
-        const token = response.data.result.find(
-          (t) => t.contractAddress.toLowerCase() === tokenAddress1.toLowerCase()
-        );
-        alert(token);
-      }
-    } catch (error) {
-      console.error("Error in getTokenSymbol:", error);
-    }
-  };
-
   const checkTokenContractOnGoerli = async (tokenContractAddress) => {
     try {
       const code = await provider.getCode(tokenContractAddress);
@@ -80,6 +64,7 @@ const SetupSwapPool = () => {
       alert("Error checking token on Goerli:", error);
     }
   };
+
 
   return { provider, uniFactoryContract, uniRouterContract, defaultAccount, checkTokenContractOnGoerli };
 };

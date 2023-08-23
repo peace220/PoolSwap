@@ -141,12 +141,6 @@ const Swapping = () => {
                 </div>
             </div>
             <div>
-                <button
-                    className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-                    onClick={getTokenRatioHandler}
-                >
-                    Get Ratio
-                </button>
                 <h1>
                     Token1 per Token2: {tokenReserve[0] / tokenReserve[1]} Token2 per Token1:{" "}
                     {tokenReserve[1] / tokenReserve[0]}
