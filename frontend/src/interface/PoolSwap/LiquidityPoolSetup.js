@@ -23,33 +23,19 @@ export const setupLiquidityPool = async (
   const ZERO_ADDRESS = "0x000000000000000000";
 
   if (tokenAddress1 && tokenAddress2) {
-    const liquidityPoolAddress = await uniFactoryContract.getPair(
-      tokenAddress1,
-      tokenAddress2
-    );
+    const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
     if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
-      const tempLiquidityPoolContract = new ethers.Contract(
-        liquidityPoolAddress,
-        UniPairABI,
-        provider
-      );
+      const tempLiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
       const reservesss = await tempLiquidityPoolContract.getReserves();
       setTokenReserve(reservesss);
     }
 
-    if (
-      (tokenAmount1 !== "" && !isNaN(tokenAmount1)) ||
-      (tokenAmount2 !== "" && !isNaN(tokenAmount2))
-    ) {
+    if ((tokenAmount1 !== "" && !isNaN(tokenAmount1)) || (tokenAmount2 !== "" && !isNaN(tokenAmount2))) {
       try {
         if (!isNaN(tokenAmount1) && tokenAmount1 !== prevTokenAmount1) {
           // Quote for Second Token
           const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount1);
-          let tempTokenQuote = await uniRouterContract.getAmountOut(
-            tempTokenAmountETH,
-            tokenReserve[0],
-            tokenReserve[1]
-          );
+          let tempTokenQuote = await uniRouterContract.getAmountOut(tempTokenAmountETH, tokenReserve[0], tokenReserve[1]);
           tempTokenQuote = ethers.utils.formatEther(tempTokenQuote);
           tempTokenQuote = customRound(tempTokenQuote);
           setTokenQuote2(tempTokenQuote);
@@ -57,11 +43,7 @@ export const setupLiquidityPool = async (
         } else if (!isNaN(tokenAmount2) && tokenAmount2 !== prevTokenAmount2) {
           // Quote for First Token
           const tempTokenAmountETH = ethers.utils.parseEther(tokenAmount2);
-          let tempTokenQuote = await uniRouterContract.getAmountOut(
-            tempTokenAmountETH,
-            tokenReserve[1],
-            tokenReserve[0]
-          );
+          let tempTokenQuote = await uniRouterContract.getAmountOut(tempTokenAmountETH, tokenReserve[1], tokenReserve[0]);
           tempTokenQuote = ethers.utils.formatEther(tempTokenQuote);
           tempTokenQuote = customRound(tempTokenQuote);
           setTokenQuote1(tempTokenQuote);
@@ -77,11 +59,11 @@ export const setupLiquidityPool = async (
   } else {
     setTokenReserve(null);
   }
-
-
   function customRound(number) {
     number = parseFloat(number);
-    number = number.toSignificant(6);
+    number = number.toFixed(6);
     return number;
   }
 };
+
+
