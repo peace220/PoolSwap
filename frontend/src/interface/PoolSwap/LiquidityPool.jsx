@@ -1,6 +1,6 @@
 import { ethers } from "ethers";
 import UniPairABI from "../../abi/uniswapPair.json";
-import SetupSwapPool from "../SetupSwapPool";
+import SetupSwapPool from "./SetupSwapPool";
 import { useEffect, useState } from "react";
 import { getTokenApproval } from "../../hooks/useTokenContract";
 import {setupLiquidityPool} from "./LiquidityPoolSetup";
@@ -9,9 +9,8 @@ const LiquidityPool = () => {
   const [tokenAddress1, setTokenAddress1] = useState("");
   const [tokenAddress2, setTokenAddress2] = useState("");
   const [tokenAmount1, setTokenAmount1] = useState("");
-  const [tokenAmount2, setTokenAmount2] = useState("");
-  const [reserves, setReserves] = useState([]);
-  const [tokenReserve, setTokenReserve] = useState(null);
+  const [tokenAmount2, setTokenAmount2] = useState("");;
+  const [tokenReserve, setTokenReserve] = useState([]);
   const [tokenQuote1, setTokenQuote1] = useState(null);
   const [tokenQuote2, setTokenQuote2] = useState(null);
   const [prevTokenAmount1, setPrevTokenAmount1] = useState("");
@@ -37,12 +36,6 @@ const LiquidityPool = () => {
       setPrevTokenAmount2
     );
   }, [tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2]);
-
-  function customRound(number) {
-    number = parseFloat(number);
-    number = number.toFixed(6);
-    return number;
-  }
 
   const getToken1Approval = async () => {
     getTokenApproval(defaultAccount, tokenAddress1, provider)
@@ -153,8 +146,8 @@ const LiquidityPool = () => {
           Get Ratio
         </button>
         <h1>
-          Token1 per Token2: {reserves[0] / reserves[1]} Token2 per Token1:{" "}
-          {reserves[1] / reserves[0]}
+          Token1 per Token2: {tokenReserve[0] / tokenReserve[1]} Token2 per Token1:{" "}
+          {tokenReserve[1] / tokenReserve[0]}
         </h1>
       </div>
       <div>

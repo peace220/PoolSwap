@@ -1,14 +1,22 @@
 import React, { useState } from "react";
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import Header from'./connection/Header';
 import LiquidityPool from "./PoolSwap/LiquidityPool";
-
+import Swapping from "./PoolSwap/swapping";
 import '@uniswap/widgets/fonts.css'
 
 
 const App = () => {
   return (
-    <div>
-      <LiquidityPool/>
-    </div>
+    <Router>
+      <div className="app">
+        <Header />
+        <Routes>
+          <Route path="/liquidity-pool" element={<LiquidityPool />} />
+          <Route path="/token-swap" element={<Swapping />} />
+        </Routes>
+      </div>
+    </Router>
   );
 };
 

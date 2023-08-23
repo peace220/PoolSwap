@@ -57,7 +57,7 @@ export const setupLiquidityPool = async (
       setTokenQuote2("");
     }
   } else {
-    setTokenReserve(null);
+    setTokenReserve("","");
   }
   function customRound(number) {
     number = parseFloat(number);

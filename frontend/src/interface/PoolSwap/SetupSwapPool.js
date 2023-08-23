@@ -1,8 +1,8 @@
 import { useEffect, useState } from "react";
 import { ethers } from "ethers";
 import axios from "axios";
-import UniFactoryABI from "../abi/uniswapFactory.json";
-import UniRouterABI from "../abi/uniswapRouter.json";
+import UniFactoryABI from "../../abi/uniswapFactory.json";
+import UniRouterABI from "../../abi/uniswapRouter.json";
 
 const uniSwapRouterAdd = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
 const uniSwapFactoryAdd = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f";
