@@ -2,25 +2,17 @@
 
 import { ethers } from "ethers";
 import UniPairABI from "../../abi/uniswapPair.json";
+const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
 
-export const setupLiquidityPool = async (
-  tokenAddress1,
-  tokenAddress2,
-  tokenAmount1,
-  tokenAmount2,
-  provider,
-  uniFactoryContract,
-  uniRouterContract,
-  tokenReserve,
-  prevTokenAmount1,
-  prevTokenAmount2,
-  setTokenReserve,
-  setTokenQuote1,
-  setTokenQuote2,
-  setPrevTokenAmount1,
-  setPrevTokenAmount2
-) => {
-  const ZERO_ADDRESS = "0x000000000000000000";
+export const setupLiquidityPool = async (args) => {
+  const {
+    tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2,
+    provider, uniFactoryContract, uniRouterContract,
+    tokenReserve, prevTokenAmount1, prevTokenAmount2,
+    setTokenReserve, setTokenQuote1, setTokenQuote2,
+    setPrevTokenAmount1, setPrevTokenAmount2
+  } = args;
+
 
   if (tokenAddress1 && tokenAddress2) {
     const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
@@ -57,7 +49,7 @@ export const setupLiquidityPool = async (
       setTokenQuote2("");
     }
   } else {
-    setTokenReserve("","");
+    setTokenReserve("", "");
   }
   function customRound(number) {
     number = parseFloat(number);
