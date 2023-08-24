@@ -1,5 +1,5 @@
 // LiquidityPoolSetup.js
-
+import { getContract } from "../../hooks/useContracts";
 import { ethers } from "ethers";
 import UniPairABI from "../../abi/uniswapPair.json";
 const ZERO_ADDRESS = "0x0000000000000000000000000000000000000000";
@@ -17,8 +17,8 @@ export const setupLiquidityPool = async (args) => {
   if (tokenAddress1 && tokenAddress2) {
     const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
     if (liquidityPoolAddress && liquidityPoolAddress !== ZERO_ADDRESS) {
-      const tempLiquidityPoolContract = new ethers.Contract(liquidityPoolAddress, UniPairABI, provider);
-      const reservesss = await tempLiquidityPoolContract.getReserves();
+      const LiquidityPoolContract = getContract(liquidityPoolAddress, UniPairABI, provider);
+      const reservesss = await LiquidityPoolContract.getReserves();
       setTokenReserve(reservesss);
     }
 

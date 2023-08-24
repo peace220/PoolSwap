@@ -78,7 +78,7 @@ const LiquidityPool = () => {
 
   return (
     <div className="mt-64 ml-64">
-      <h1 className ="">Add Liquidity</h1>
+      <h1 className ="text-4xl">Add Liquidity</h1>
       {defaultAccount && <h3> Address: {defaultAccount} </h3>}
       <h2>TokenA Allowance: {tokenAllowance1}     TokenB Allowance: {tokenAllowance2}</h2>
       {/*<-- Swap and Pool--> */}
@@ -142,7 +142,7 @@ const LiquidityPool = () => {
           Token Quote 1: {tokenQuote1} Token Quote 2:{tokenQuote2}
         </h1>
       </div>
-      <div>
+      <div className="mb-4">
         <button
           className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
           onClick={getToken1Approval}
