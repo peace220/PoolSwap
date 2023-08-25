@@ -77,7 +77,7 @@ const LiquidityPool = () => {
   };
 
   return (
-    <div className="mt-64 ml-64">
+    <div className="mt-16 ml-64">
       <h1 className ="text-4xl">Add Liquidity</h1>
       {defaultAccount && <h3> Address: {defaultAccount} </h3>}
       <h2>TokenA Allowance: {tokenAllowance1}     TokenB Allowance: {tokenAllowance2}</h2>

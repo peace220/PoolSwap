@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import SetupSwapPool from "../PoolSwap/SetupSwapPool";
 import { getTokenApproval } from "../../hooks/useTokenContract";
 import { setupLiquidityPool } from "./LiquidityPoolSetup";
+import {useSwapExactTokensForTokens} from "../../hooks/useRouterContract";
+import { Signer } from "ethers";
 
 const Swapping = () => {
     const [tokenAddress1, setTokenAddress1] = useState("");
@@ -46,9 +48,9 @@ const Swapping = () => {
         getTokenApproval(defaultAccount, tokenAddress2, provider)
     }
 
-    const checktoken = async () => {
-        await checkTokenContractOnGoerli(tokenAddress1);
-    };
+    // const swapToken = async () => {
+    //     useSwapExactTokensForTokens(tokenAmount1,,,,defaultAccount,provider,Signer);
+    // };
 
     const handleToken1AddressChange = (event) => {
         setTokenAddress1(event.target.value);
@@ -68,7 +70,7 @@ const Swapping = () => {
 
 
     return (
-        <div className="mt-64 ml-64">
+        <div className="mt-16 ml-64">
             <h1 className="text-4xl">Swap</h1>
             {defaultAccount && <h3> Address: {defaultAccount} </h3>}
             {/*<-- Swap and Pool--> */}
