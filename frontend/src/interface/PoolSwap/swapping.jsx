@@ -2,8 +2,7 @@ import { useState, useEffect } from "react";
 import SetupSwapPool from "../PoolSwap/SetupSwapPool";
 import { getTokenApproval } from "../../hooks/useTokenContract";
 import { setupLiquidityPool } from "./LiquidityPoolSetup";
-import {useSwapExactTokensForTokens} from "../../hooks/useRouterContract";
-import { Signer } from "ethers";
+import {performTrade} from "../../hooks/useRouterContract";
 
 const Swapping = () => {
     const [tokenAddress1, setTokenAddress1] = useState("");
@@ -48,9 +47,9 @@ const Swapping = () => {
         getTokenApproval(defaultAccount, tokenAddress2, provider)
     }
 
-    // const swapToken = async () => {
-    //     useSwapExactTokensForTokens(tokenAmount1,,,,defaultAccount,provider,Signer);
-    // };
+    const swapToken = async () => {
+        performTrade(tokenAddress1,tokenAddress2,tokenAmount1,defaultAccount,provider,tokenReserve);
+    };
 
     const handleToken1AddressChange = (event) => {
         setTokenAddress1(event.target.value);
@@ -140,6 +139,10 @@ const Swapping = () => {
                     Approve TokenB
                 </button>
             </div>
+            <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+                    onClick={swapToken}>
+                    Swap
+                </button>
         </div>
     );
 };

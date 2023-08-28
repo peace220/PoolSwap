@@ -1,8 +1,10 @@
 import { getContract } from "../hooks/useContracts";
 import uniSwapRouter_ABI from "../abi/uniswapRouter";
+import{ ethers }from "ethers";
+
 
 const slippageTolerance = 0.01;
-
+const Fee = 0.005;
 export async function useAddLiquidity(
     tokenAddress1,
     tokenAddress2,
@@ -36,22 +38,38 @@ export async function useAddLiquidity(
         deadline
     );
 }
+function slipCalcV2(amountInBN, reserveInBN, reserveOutBN, Fee) {
+    // _deciIn and _deciOut for decimal places correction of reserves
+    let amountInWithFee = amountInBN * (1 - Fee);
 
-export async function useSwapExactTokensForTokens(
+    let numerator = amountInWithFee * amountInWithFee * reserveOutBN;
+    let denominator = reserveInBN * (reserveInBN + amountInWithFee);
+    let slippage = numerator / denominator;
+    return slippage;
+}
+
+export async function performTrade(
     tokenIn,
     tokenOut,
     amountIn,
-    amountOutMin,
     userAddress,
     provider,
-    signer
+    tokenReserve
 ) {
+    const slippage = slipCalcV2(amountIn,tokenReserve[0],tokenReserve[1],Fee)
+    const expectedPrice = tokenReserve[0] / tokenReserve[1];
+    let amountOut = expectedPrice * (1 + slippage)
+    amountOut = amountOut.toString();
+    amountOut = ethers.utils.parseEther(amountOut);
+    let amountOutMin =amountOut * (1 - slippageTolerance)
+    amountOutMin = amountOutMin.toString();
+    amountOutMin = ethers.utils.parseEther();
     const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
+    const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
 
-    const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, signer);
+    console.log(amountIn,amountOut)
 
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10 minute from the swap
-
     await contract.swapExactTokensForTokens(
         amountIn,
         amountOutMin,
@@ -60,3 +78,4 @@ export async function useSwapExactTokensForTokens(
         deadline
     );
 }
+

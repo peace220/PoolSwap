@@ -6,12 +6,11 @@ export function getContract(address, ABI, provider, account) {
   if (!isAddress(address) || address === AddressZero) {
     throw Error(`Invalid 'address' parameter '${address}'.`);
   }
-try{
-  return new Contract(address, ABI, getProviderOrSigner(provider, account));
-}catch(error){
-  console.log(error);
-}
-
+  try {
+    return new Contract(address, ABI, getProviderOrSigner(provider, account));
+  } catch (error) {
+    console.log(error);
+  }
 }
 
 function isAddress(address) {
