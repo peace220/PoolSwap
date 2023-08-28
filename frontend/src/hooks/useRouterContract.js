@@ -59,15 +59,15 @@ export async function performTrade(
     const slippage = slipCalcV2(amountIn,tokenReserve[0],tokenReserve[1],Fee)
     const expectedPrice = tokenReserve[0] / tokenReserve[1];
     let amountOut = expectedPrice * (1 + slippage)
+    let amountOutMin =amountOut * (1 - slippageTolerance)
     amountOut = amountOut.toString();
     amountOut = ethers.utils.parseEther(amountOut);
-    let amountOutMin =amountOut * (1 - slippageTolerance)
     amountOutMin = amountOutMin.toString();
-    amountOutMin = ethers.utils.parseEther();
+    amountOutMin = ethers.utils.parseEther(amountOutMin);
+    amountIn = ethers.utils.parseEther(amountIn);
     const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
     const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
 
-    console.log(amountIn,amountOut)
 
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10 minute from the swap
     await contract.swapExactTokensForTokens(
