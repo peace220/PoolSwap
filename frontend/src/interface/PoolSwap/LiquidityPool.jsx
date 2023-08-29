@@ -1,5 +1,4 @@
 import { ethers } from "ethers";
-import UniPairABI from "../../abi/uniswapPair.json";
 import SetupSwapPool from "./SetupSwapPool";
 import { useEffect, useState } from "react";
 import { getTokenApproval , getTokenAllowance} from "../../hooks/useTokenContract";
@@ -42,13 +41,11 @@ const LiquidityPool = () => {
   }, [tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2]);
 
   const getToken1Allowance = async()=>{
-    let temptokenAllowance = await getTokenAllowance(defaultAccount,tokenAddress1,provider);
-    temptokenAllowance = ethers.utils.formatEther(temptokenAllowance);
+    const temptokenAllowance = await getTokenAllowance(defaultAccount,tokenAddress1,provider);
     setTokenAllowance1(temptokenAllowance);
   }
   const getToken2Allowance = async()=>{
-    let temptokenAllowance = await getTokenAllowance(defaultAccount,tokenAddress2,provider);
-    temptokenAllowance = ethers.utils.formatEther(temptokenAllowance);
+    const temptokenAllowance = await getTokenAllowance(defaultAccount,tokenAddress2,provider);
     setTokenAllowance2(temptokenAllowance);
   }
   const getToken1Approval = async () => {

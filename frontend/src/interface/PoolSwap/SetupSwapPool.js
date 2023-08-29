@@ -47,6 +47,7 @@ const SetupSwapPool = () => {
       } catch (e) {
         console.error("Error setting up event listener for account change:", e);
       }
+
     };
 
     setup();
