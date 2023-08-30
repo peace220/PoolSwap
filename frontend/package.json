@@ -10,6 +10,7 @@
     "@uniswap/widgets": "^2.53.1",
     "@web3-react/core": "^8.2.2",
     "axios": "^1.4.0",
+    "bignumber": "^1.1.0",
     "ethers": "^5.7.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

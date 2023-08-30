@@ -1,8 +1,9 @@
-import { ethers } from "ethers";
+import { Signer, ethers } from "ethers";
 import SetupSwapPool from "./SetupSwapPool";
 import { useEffect, useState } from "react";
 import { getTokenApproval , getTokenAllowance} from "../../hooks/useTokenContract";
 import { setupLiquidityPool } from "./LiquidityPoolSetup";
+import { useAddLiquidity } from "../../hooks/useRouterContract";
 
 const LiquidityPool = () => {
   const [tokenAddress1, setTokenAddress1] = useState("");
@@ -54,6 +55,10 @@ const LiquidityPool = () => {
 
   const getToken2Approval = async () => {
     getTokenApproval(defaultAccount, tokenAddress2, provider)
+  }
+
+  async function AddLiquidity (){
+    useAddLiquidity(tokenAddress1,tokenAddress2,tokenAmount1,tokenAmount2,defaultAccount,provider,tokenReserve)
   }
 
   {/*<---- Interface Handler ----> */}
@@ -161,6 +166,12 @@ const LiquidityPool = () => {
         <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
           onClick={getToken2Allowance}>
           Get TokenB Allowance
+        </button>
+      </div>
+      <div>
+      <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
+          onClick={AddLiquidity}>
+          addLiquidity
         </button>
       </div>
     </div>

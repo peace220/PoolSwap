@@ -19,10 +19,29 @@ export async function getTokenAllowance(userAddress,tokenAddress,provider){
     const contract = getContract(tokenAddress,ERC20_ABI,provider)
     try{
         let userTokenAllowance = await contract.allowance(userAddress,spender);
-        userTokenAllowance = ethers.utils.parseEther(userTokenAllowance);
+        userTokenAllowance = ethers.utils.formatEther(userTokenAllowance);
         return userTokenAllowance
     }catch(error){
         console.log(error);
     }
 }
 
+export async function getTokenSymbol(tokenAddress,provider){
+    const contract = getContract(tokenAddress,ERC20_ABI,provider)
+    try{
+        const tokenSymbol = await contract.symbol();
+        return tokenSymbol
+    }catch(error){
+        console.log(error);
+    }
+}
+
+export async function getTokenDecimal(tokenAddress,provider){
+    const contract = getContract(tokenAddress,ERC20_ABI,provider)
+    try{
+        const tokenDecimal = await contract.decimals();
+        return tokenDecimal
+    }catch(error){
+        console.log(error);
+    }
+}

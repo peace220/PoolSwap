@@ -1,11 +1,12 @@
 import { getContract } from "../hooks/useContracts";
 import uniSwapRouter_ABI from "../abi/uniswapRouter";
 import { ethers } from "ethers";
-import { getTokenAllowance, getTokenApproval } from "./useTokenContract";
+import BigNumber from 'bignumber.js';
+import { getTokenAllowance, getTokenApproval, getTokenSymbol, getTokenDecimal} from "./useTokenContract";
 
 const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // uniswapRouterv2
 const slippageTolerance = 0.01;
-const Fee = 0.005;
+const Fee = 0.003;
 export async function useAddLiquidity(
     tokenAddress1,
     tokenAddress2,
@@ -13,19 +14,24 @@ export async function useAddLiquidity(
     token2Amount,
     userAddress,
     provider,
-    signer,
     tokenReserve
 ) {
+    let amountAMin = 0;
+    let amountBMin = 0;
     const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-    const expectedPrice = tokenReserve[0] / tokenReserve[1];
-    const maxAcceptablePrice = expectedPrice * (1 + slippageTolerance);
-
-    const amountAMin = token1Amount * maxAcceptablePrice;
-    const amountBMin = token2Amount * maxAcceptablePrice;
-
-    const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, signer);
+    if(tokenReserve[0] != 0 && tokenReserve[1] != 0){
+        const expectedPrice = tokenReserve[0] / tokenReserve[1];
+        const maxAcceptablePrice = expectedPrice * (1 + slippageTolerance);
+        let amountAMin = token1Amount * maxAcceptablePrice;
+        let amountBMin = token2Amount * maxAcceptablePrice;
+        amountAMin = changeToEther(amountAMin);
+        amountBMin = changeToEther(amountBMin);
+    }
+    token1Amount = changeToEther(token1Amount);
+    token2Amount = changeToEther(token2Amount);
+    const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10minute from the add liquidity
-
+    console.log(deadline);
     await contract.addLiquidity(
         tokenAddress1,
         tokenAddress2,
@@ -47,47 +53,54 @@ export async function performTrade(
     tokenReserve
 ) {
     checkTokenAllowance(amountIn, userAddress, tokenInAddress, provider);
+    const tokenReserve1 = ethers.utils.formatEther(tokenReserve[0])
+    const tokenReserve2 = ethers.utils.formatEther(tokenReserve[1])
+    const tokenDecimal1 = await getTokenDecimal(tokenInAddress,provider)
+    const tokenDecimal2 = await getTokenDecimal(tokenInAddress,provider)
     let nativeToken = "";
     const network = await provider.getNetwork();
     const chainID = network.chainId;
+    const tokenSymbol1 = await getTokenSymbol(tokenInAddress,provider)
+    const tokenSymbol2 = await getTokenSymbol(tokenOutAddress,provider)
 
-    const slippage = slipCalcV2(amountIn, tokenReserve[0], tokenReserve[1], Fee)
-    const expectedPrice = tokenReserve[0] / tokenReserve[1];
-    let amountOut = expectedPrice * (1 + slippage);
-    let amountOutMin = amountOut * (1 - slippageTolerance);
-    amountOutMin = amountOutMin.toString();
-    amountOutMin = ethers.utils.parseEther(amountOutMin);
-    amountIn = ethers.utils.parseEther(amountIn);
+    const slippage = slipCalcV2(amountIn, tokenReserve1, tokenReserve2,tokenDecimal1,tokenDecimal2, Fee)
+    const expectedPrice = getAmountOutV2(amountIn,tokenReserve1,tokenReserve2,tokenDecimal1,tokenDecimal2,Fee);
+    const slippagePercentage = slippage/expectedPrice*100;
+
+    let amountOutMin = expectedPrice * 0.1;
+    amountOutMin = parseFloat(amountOutMin).toFixed(6);
+    amountOutMin = ethers.utils.parseEther(amountOutMin.toString());
+    amountIn = ethers.utils.parseEther(amountIn.toString());
 
     const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10 minute from the swap
-    console.log(chainID);
+
     switch (chainID) {
         case 1: // Etheruem net
-            nativeToken = "Binance";
+            nativeToken = "ETH";
             break;
-        case 56: // Binance net
-            nativeToken = "ETH"
-            break;
+
         case 5: // goerli net
-            nativeToken = "goerli"
+            nativeToken = "WETH"
             break;
+
+        case 56: // Binance net
+            nativeToken = "BNB"
+            break;
+
         default:
             console.warn('Unsupported network');
             return;
     }
-
-    const networkName = network.name;
-
-    if (networkName == nativeToken) {
-        await contract.swapExactTokensForTokens(
+    if (tokenSymbol1 != nativeToken && tokenSymbol2 == nativeToken) {
+        await contract.swapExactTokensForETH(
             amountIn,
             amountOutMin,
             [tokenInAddress, tokenOutAddress],
             userAddress,
             deadline
         )
-    } else if (networkName == nativeToken) {
+    } else if (tokenSymbol1 == nativeToken && tokenSymbol2 != nativeToken) {
         await contract.swapExactETHForTokens(
             amountIn,
             amountOutMin,
@@ -95,19 +108,14 @@ export async function performTrade(
             userAddress,
             deadline
         );
-    } else if (networkName == nativeToken) {
-        await contract.swapExactTokensForETH(
+    } else if (tokenSymbol1 != nativeToken && tokenSymbol2 != nativeToken) {
+        await contract.swapExactTokensForTokens(
             amountIn,
             amountOutMin,
             [tokenInAddress, tokenOutAddress],
             userAddress,
             deadline
         );
-    }
-
-    return {
-        amountOut,
-        amountOutMin
     }
 }
 
@@ -119,24 +127,62 @@ export function calculateSlipageRatio(amountIn, tokenReserve, provider) {
     return slippage / amountOutV2;
 }
 
-function slipCalcV2(amountInBN, reserveInBN, reserveOutBN, Fee) {
+function slipCalcV2(_amountIn, _reserveIn, _reserveOut, _deciIn, _deciOut, Fee) {
     // _deciIn and _deciOut for decimal places correction of reserves
-    let amountInWithFee = amountInBN * (1 - Fee);
+    let amountInBN = BigNumber(_amountIn);
+    let amountInWithFee = amountInBN.multipliedBy(1 - Fee);
+    let reserveInBN = BigNumber(_reserveIn);
+    let reserveOutBN = BigNumber(_reserveOut);
 
-    let numerator = amountInWithFee * amountInWithFee * reserveOutBN;
-    let denominator = reserveInBN * (reserveInBN + amountInWithFee);
-    let slippage = numerator / denominator;
+    let numerator = amountInWithFee.exponentiatedBy(2).times(reserveOutBN);
+    let denominator = reserveInBN.times(reserveInBN.plus(amountInWithFee));
+    let slippage = numerator.dividedBy(denominator);
     return slippage;
 }
 
 
+function getAmountOutV2(amountIn, reserveIn, reserveOut, DeciIn, DeciOut, Fee) {
+    // DeciIn and DeciOut for decimal places correction of reserves
+
+    let amountOut;
+
+    let amountInBN = BigNumber(amountIn);
+    let reserveInBN = BigNumber(reserveIn);
+    let reserveOutBN = BigNumber(reserveOut);
+
+    // let deciCorrection = BigNumber(10).exponentiatedBy(DeciIn-DeciOut);
+    if (amountIn <= 0) {
+        console.error("INSUFFICIENT_INPUT_AMOUNT");
+        return -1;
+    }
+    if (reserveIn <= 0 || reserveOut <= 0) {
+        console.error("INSUFFICIENT_LIQUIDITY");
+        return -1;
+    }
+
+    function calc1() {
+        let amountInWithFee = amountInBN.multipliedBy(1 - Fee);
+        let numerator = amountInWithFee.multipliedBy(reserveOutBN);
+        let denominator = reserveInBN.plus(amountInWithFee);
+        amountOut = numerator.dividedBy(denominator);
+    }
+    calc1();
+    return amountOut;
+}
+
+
 function changeToEther(amount) {
-    return ethers.utils.parseEther(amount);
+    const value = new BigNumber(amount);
+    console.log(value.toString());
+    amount = ethers.utils.parseEther(value.toString());
+    return amount.toString();
 };
 
 async function checkTokenAllowance(tokenAmount, userAddress, tokenAddress, provider) {
-    const tokenAllowance = getTokenAllowance(userAddress, tokenAddress, provider)
-    if (tokenAmount < tokenAllowance) {
+    const tokenAllowance = await getTokenAllowance(userAddress, tokenAddress, provider)
+    if (tokenAmount >= tokenAllowance) {
+        console.log(tokenAmount);
+        console.log(tokenAllowance);
         getTokenApproval(userAddress, tokenAddress, provider);
     } else {
         return;
