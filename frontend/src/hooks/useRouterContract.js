@@ -5,33 +5,47 @@ import BigNumber from 'bignumber.js';
 import { getTokenAllowance, getTokenApproval, getTokenSymbol, getTokenDecimal} from "./useTokenContract";
 
 const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // uniswapRouterv2
-const slippageTolerance = 0.01;
 const Fee = 0.003;
 export async function useAddLiquidity(
     tokenAddress1,
     tokenAddress2,
     token1Amount,
-    token2Amount,
     userAddress,
     provider,
     tokenReserve
 ) {
-    let amountAMin = 0;
-    let amountBMin = 0;
-    const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D";
-    if(tokenReserve[0] != 0 && tokenReserve[1] != 0){
-        const expectedPrice = tokenReserve[0] / tokenReserve[1];
-        const maxAcceptablePrice = expectedPrice * (1 + slippageTolerance);
-        let amountAMin = token1Amount * maxAcceptablePrice;
-        let amountBMin = token2Amount * maxAcceptablePrice;
-        amountAMin = changeToEther(amountAMin);
-        amountBMin = changeToEther(amountBMin);
-    }
-    token1Amount = changeToEther(token1Amount);
-    token2Amount = changeToEther(token2Amount);
+    checkTokenAllowance(token1Amount, userAddress, tokenAddress1, provider);
     const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10minute from the add liquidity
     console.log(deadline);
+    const token1PerToken2 = tokenReserve[0]/tokenReserve[1];
+    let token2Amount = token1Amount*token1PerToken2;
+    checkTokenAllowance(token2Amount, userAddress, tokenAddress2, provider);
+    token2Amount = parseFloat(token2Amount).toFixed(6);
+    token2Amount = ethers.utils.parseEther(token2Amount.toString());
+    token1Amount = ethers.utils.parseEther(token1Amount.toString());
+    const tokenDecimal1 = await getTokenDecimal(tokenAddress1,provider)
+    const tokenDecimal2 = await getTokenDecimal(tokenAddress2,provider)
+
+
+    let amountAMin = 0;
+    let amountBMin = 0;
+    if(tokenReserve[0] !== 0 && tokenReserve[1] !== 0){
+        amountAMin = changeToEther(amountAMin);
+        amountBMin = changeToEther(amountBMin);
+        await contract.addLiquidity(
+            tokenAddress1,
+            tokenAddress2,
+            token1Amount,
+            token2Amount,
+            amountAMin,
+            amountBMin,
+            userAddress,
+            deadline
+        );
+        return
+    }
+
     await contract.addLiquidity(
         tokenAddress1,
         tokenAddress2,
@@ -67,7 +81,7 @@ export async function performTrade(
     const expectedPrice = getAmountOutV2(amountIn,tokenReserve1,tokenReserve2,tokenDecimal1,tokenDecimal2,Fee);
     const slippagePercentage = slippage/expectedPrice*100;
 
-    let amountOutMin = expectedPrice * 0.1;
+    let amountOutMin = expectedPrice * 0.01;
     amountOutMin = parseFloat(amountOutMin).toFixed(6);
     amountOutMin = ethers.utils.parseEther(amountOutMin.toString());
     amountIn = ethers.utils.parseEther(amountIn.toString());
@@ -173,7 +187,6 @@ function getAmountOutV2(amountIn, reserveIn, reserveOut, DeciIn, DeciOut, Fee) {
 
 function changeToEther(amount) {
     const value = new BigNumber(amount);
-    console.log(value.toString());
     amount = ethers.utils.parseEther(value.toString());
     return amount.toString();
 };
@@ -181,10 +194,17 @@ function changeToEther(amount) {
 async function checkTokenAllowance(tokenAmount, userAddress, tokenAddress, provider) {
     const tokenAllowance = await getTokenAllowance(userAddress, tokenAddress, provider)
     if (tokenAmount >= tokenAllowance) {
-        console.log(tokenAmount);
-        console.log(tokenAllowance);
         getTokenApproval(userAddress, tokenAddress, provider);
     } else {
         return;
     }
 };
+
+function calcAmountToken(amountIn, reserveToken0, reserveToken1) {
+    const inputToken0 = new BigNumber(amountIn);
+    const reserveToken0BN = new BigNumber(reserveToken0);
+    const reserveToken1BN = new BigNumber(reserveToken1);
+    const k = reserveToken0BN.times(reserveToken1BN); 
+    const outputToken1 = k.dividedBy(reserveToken0BN.plus(inputToken0)).minus(reserveToken1BN);
+    return outputToken1.toString();
+}

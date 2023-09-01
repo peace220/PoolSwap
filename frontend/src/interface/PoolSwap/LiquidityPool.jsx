@@ -58,7 +58,7 @@ const LiquidityPool = () => {
   }
 
   async function AddLiquidity (){
-    useAddLiquidity(tokenAddress1,tokenAddress2,tokenAmount1,tokenAmount2,defaultAccount,provider,tokenReserve)
+    useAddLiquidity(tokenAddress1,tokenAddress2,tokenAmount1,defaultAccount,provider,tokenReserve)
   }
 
   {/*<---- Interface Handler ----> */}
