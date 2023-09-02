@@ -14,6 +14,10 @@ export async function useAddLiquidity(
     provider,
     tokenReserve
 ) {
+    let amountOutMinToken1 = 0;
+    let amountOutMinToken2 = 0;
+    const tokenReserve1 = ethers.utils.formatEther(tokenReserve[0])
+    const tokenReserve2 = ethers.utils.formatEther(tokenReserve[1])
     checkTokenAllowance(token1Amount, userAddress, tokenAddress1, provider);
     const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10minute from the add liquidity
@@ -22,40 +26,54 @@ export async function useAddLiquidity(
     let token2Amount = token1Amount*token1PerToken2;
     checkTokenAllowance(token2Amount, userAddress, tokenAddress2, provider);
     token2Amount = parseFloat(token2Amount).toFixed(6);
-    token2Amount = ethers.utils.parseEther(token2Amount.toString());
-    token1Amount = ethers.utils.parseEther(token1Amount.toString());
+
     const tokenDecimal1 = await getTokenDecimal(tokenAddress1,provider)
     const tokenDecimal2 = await getTokenDecimal(tokenAddress2,provider)
 
-
-    let amountAMin = 0;
-    let amountBMin = 0;
     if(tokenReserve[0] !== 0 && tokenReserve[1] !== 0){
-        amountAMin = changeToEther(amountAMin);
-        amountBMin = changeToEther(amountBMin);
+        const expectedPriceToken1 = getAmountOutV2(token1Amount,tokenReserve1,tokenReserve2,tokenDecimal1,tokenDecimal2,Fee);
+        amountOutMinToken1 = expectedPriceToken1 * 0.001;
+        amountOutMinToken1 = parseFloat(amountOutMinToken1).toFixed(6);
+        amountOutMinToken1 = ethers.utils.parseEther(amountOutMinToken1.toString());
+        const expectedPriceToken2 = getAmountOutV2(token2Amount,tokenReserve2,tokenReserve1,tokenDecimal1,tokenDecimal2,Fee);
+        amountOutMinToken2 = expectedPriceToken2 * 0.001;
+        amountOutMinToken2 = parseFloat(amountOutMinToken2).toFixed(6);
+        amountOutMinToken2 = ethers.utils.parseEther(amountOutMinToken2.toString());
+        token2Amount = ethers.utils.parseEther(token2Amount.toString());
+        token1Amount = ethers.utils.parseEther(token1Amount.toString());
+        console.log(amountOutMinToken1.toString());
+        console.log(amountOutMinToken2.toString());
+        console.log(token1Amount.toString());
+        console.log(token2Amount.toString());
         await contract.addLiquidity(
             tokenAddress1,
             tokenAddress2,
             token1Amount,
             token2Amount,
-            amountAMin,
-            amountBMin,
+            amountOutMinToken1,
+            amountOutMinToken2,
+            userAddress,
+            deadline
+        );
+        return
+    }else{
+        amountOutMinToken1 = changeToEther(amountOutMinToken1);
+        amountOutMinToken2 = changeToEther(amountOutMinToken2);
+        token2Amount = ethers.utils.parseEther(token2Amount.toString());
+        token1Amount = ethers.utils.parseEther(token1Amount.toString());
+        await contract.addLiquidity(
+            tokenAddress1,
+            tokenAddress2,
+            token1Amount,
+            token2Amount,
+            amountOutMinToken1,
+            amountOutMinToken2,
             userAddress,
             deadline
         );
         return
     }
 
-    await contract.addLiquidity(
-        tokenAddress1,
-        tokenAddress2,
-        token1Amount,
-        token2Amount,
-        amountAMin,
-        amountBMin,
-        userAddress,
-        deadline
-    );
 }
 
 export async function performTrade(
@@ -141,6 +159,15 @@ export function calculateSlipageRatio(amountIn, tokenReserve, provider) {
     return slippage / amountOutV2;
 }
 
+export function useRemoveLiquidity(    
+    tokenAddress1,
+    tokenAddress2,
+    token1Amount,
+    userAddress,
+    provider,
+    tokenReserve){
+
+}
 function slipCalcV2(_amountIn, _reserveIn, _reserveOut, _deciIn, _deciOut, Fee) {
     // _deciIn and _deciOut for decimal places correction of reserves
     let amountInBN = BigNumber(_amountIn);

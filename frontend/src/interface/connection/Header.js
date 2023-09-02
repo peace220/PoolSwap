@@ -8,6 +8,9 @@ const Header = () => {
       <Link to="/liquidity-pool">
       <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600">Add Liquidity</button>
       </Link>
+      <Link to="/remove-liquidity">
+      <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600">Remove Liquidity</button>
+      </Link>
       <Link to="/token-swap">
       <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600">Swap</button>
       </Link>
