@@ -14,7 +14,7 @@ const Swapping = () => {
     const [tokenQuote2, setTokenQuote2] = useState(null);
     const [prevTokenAmount1, setPrevTokenAmount1] = useState("");
     const [prevTokenAmount2, setPrevTokenAmount2] = useState("");
-    const { provider, uniFactoryContract, uniRouterContract, defaultAccount, checkTokenContractOnGoerli } = SetupSwapPool();
+    const { provider, uniFactoryContract, uniRouterContract, defaultAccount } = SetupSwapPool();
 
 
     useEffect(() => {

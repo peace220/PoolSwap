@@ -1,5 +1,7 @@
 import { getContract } from "../hooks/useContracts";
 import ERC20_ABI from "../abi/erc20.json";
+import UniFactoryABI from "../abi/uniswapFactory.json";
+import UniPairABI from "../abi/uniswapPair.json";
 import { ethers } from "ethers";
 
 export async function getTokenApproval(signer,tokenAddress,provider){
@@ -44,4 +46,23 @@ export async function getTokenDecimal(tokenAddress,provider){
     }catch(error){
         console.log(error);
     }
+}
+
+export async function getUserBalance(tokenAddress1,tokenAddress2,provider,userAddress){
+    const factoryAddress = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+    const uniFactoryContract = getContract(factoryAddress,UniFactoryABI,provider)
+    const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
+    const pairContract = getContract(liquidityPoolAddress,UniPairABI,provider);
+    let userBalance = await pairContract.balanceOf(userAddress);
+    // userBalance = ethers.utils.formatEther(userBalance);
+    return userBalance;
+}
+
+export async function getTotalSupply(tokenAddress1,tokenAddress2,provider){
+    const factoryAddress = "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f"
+    const uniFactoryContract = getContract(factoryAddress,UniFactoryABI,provider)
+    const liquidityPoolAddress = await uniFactoryContract.getPair(tokenAddress1, tokenAddress2);
+    const pairContract = getContract(liquidityPoolAddress,UniPairABI,provider);
+    const totalSupply = await pairContract.totalSupply();
+    return totalSupply;
 }

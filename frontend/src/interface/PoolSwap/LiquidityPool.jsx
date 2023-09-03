@@ -41,22 +41,6 @@ const LiquidityPool = () => {
     
   }, [tokenAddress1, tokenAddress2, tokenAmount1, tokenAmount2]);
 
-  const getToken1Allowance = async()=>{
-    const temptokenAllowance = await getTokenAllowance(defaultAccount,tokenAddress1,provider);
-    setTokenAllowance1(temptokenAllowance);
-  }
-  const getToken2Allowance = async()=>{
-    const temptokenAllowance = await getTokenAllowance(defaultAccount,tokenAddress2,provider);
-    setTokenAllowance2(temptokenAllowance);
-  }
-  const getToken1Approval = async () => {
-    getTokenApproval(defaultAccount, tokenAddress1, provider)
-  }
-
-  const getToken2Approval = async () => {
-    getTokenApproval(defaultAccount, tokenAddress2, provider)
-  }
-
   async function AddLiquidity (){
     useAddLiquidity(tokenAddress1,tokenAddress2,tokenAmount1,defaultAccount,provider,tokenReserve)
   }
@@ -82,7 +66,6 @@ const LiquidityPool = () => {
     <div className="mt-16 ml-64">
       <h1 className ="text-4xl">Add Liquidity</h1>
       {defaultAccount && <h3> Address: {defaultAccount} </h3>}
-      <h2>TokenA Allowance: {tokenAllowance1}     TokenB Allowance: {tokenAllowance2}</h2>
       {/*<-- Swap and Pool--> */}
 
       <div className="flex flex-warp">
@@ -143,30 +126,6 @@ const LiquidityPool = () => {
         <h1>
           Token Quote 1: {tokenQuote1} Token Quote 2:{tokenQuote2}
         </h1>
-      </div>
-      <div className="mb-4">
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-          onClick={getToken1Approval}
-        >
-          Approve TokenA
-        </button>
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-          onClick={getToken2Approval}>
-          Approve TokenB
-        </button>
-      </div>
-      <div>
-        <button
-          className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-          onClick={getToken1Allowance}
-        >
-          Get TokenA Allowance
-        </button>
-        <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"
-          onClick={getToken2Allowance}>
-          Get TokenB Allowance
-        </button>
       </div>
       <div>
       <button className="px-4 py-2 bg-blue-500 text-white rounded-md focus:outline-none hover:bg-blue-600"

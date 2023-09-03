@@ -2,7 +2,7 @@ import { getContract } from "../hooks/useContracts";
 import uniSwapRouter_ABI from "../abi/uniswapRouter";
 import { ethers } from "ethers";
 import BigNumber from 'bignumber.js';
-import { getTokenAllowance, getTokenApproval, getTokenSymbol, getTokenDecimal} from "./useTokenContract";
+import { getTokenAllowance, getTokenApproval, getTokenSymbol, getTokenDecimal, getUserBalance, getTotalSupply} from "./useTokenContract";
 
 const contractAddress = "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"; // uniswapRouterv2
 const Fee = 0.003;
@@ -21,12 +21,10 @@ export async function useAddLiquidity(
     checkTokenAllowance(token1Amount, userAddress, tokenAddress1, provider);
     const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
     const deadline = Math.floor(Date.now() / 1000) + 600; // 10minute from the add liquidity
-    console.log(deadline);
     const token1PerToken2 = tokenReserve[0]/tokenReserve[1];
     let token2Amount = token1Amount*token1PerToken2;
     checkTokenAllowance(token2Amount, userAddress, tokenAddress2, provider);
     token2Amount = parseFloat(token2Amount).toFixed(6);
-
     const tokenDecimal1 = await getTokenDecimal(tokenAddress1,provider)
     const tokenDecimal2 = await getTokenDecimal(tokenAddress2,provider)
 
@@ -41,10 +39,6 @@ export async function useAddLiquidity(
         amountOutMinToken2 = ethers.utils.parseEther(amountOutMinToken2.toString());
         token2Amount = ethers.utils.parseEther(token2Amount.toString());
         token1Amount = ethers.utils.parseEther(token1Amount.toString());
-        console.log(amountOutMinToken1.toString());
-        console.log(amountOutMinToken2.toString());
-        console.log(token1Amount.toString());
-        console.log(token2Amount.toString());
         await contract.addLiquidity(
             tokenAddress1,
             tokenAddress2,
@@ -159,15 +153,25 @@ export function calculateSlipageRatio(amountIn, tokenReserve, provider) {
     return slippage / amountOutV2;
 }
 
-export function useRemoveLiquidity(    
+export async function useRemoveLiquidity(    
     tokenAddress1,
     tokenAddress2,
-    token1Amount,
+    liquidityPrecentage,
     userAddress,
     provider,
     tokenReserve){
-
+        const contract = getContract(contractAddress, uniSwapRouter_ABI, provider, userAddress);
+        const totalSupply = await getTotalSupply(tokenAddress1,tokenAddress2,provider);
+        let userBalance = await getUserBalance(tokenAddress1,tokenAddress2,provider,userAddress);
+        const liquidity = userBalance * liquidityPrecentage / 100;
+        const amountA = liquidity * tokenReserve[0] / totalSupply;
+        const amountB = liquidity * tokenReserve[1] / totalSupply;
+        const amountAMin = amountA /100 * 95
+        const amountBMin = amountB /100 * 95
+        const deadline = Math.floor(Date.now() / 1000) + 600;
+        await contract.removeLiquidity(tokenAddress1,tokenAddress2,liquidity,amountAMin,amountBMin,userAddress,deadline);
 }
+
 function slipCalcV2(_amountIn, _reserveIn, _reserveOut, _deciIn, _deciOut, Fee) {
     // _deciIn and _deciOut for decimal places correction of reserves
     let amountInBN = BigNumber(_amountIn);
@@ -228,7 +232,8 @@ async function checkTokenAllowance(tokenAmount, userAddress, tokenAddress, provi
 };
 
 function calcAmountToken(amountIn, reserveToken0, reserveToken1) {
-    const inputToken0 = new BigNumber(amountIn);
+    let inputToken0 = amountIn * (10**18);
+    inputToken0 = new BigNumber(inputToken0);
     const reserveToken0BN = new BigNumber(reserveToken0);
     const reserveToken1BN = new BigNumber(reserveToken1);
     const k = reserveToken0BN.times(reserveToken1BN); 
